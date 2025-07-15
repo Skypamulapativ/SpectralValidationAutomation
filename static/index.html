@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YAML Spectral Validation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: url('static/sky10.png') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+    }
+    .container {
+      margin-top: 50px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+    input, button {
+      margin: 10px;
+      padding: 10px;
+    }
+    input[type="text"], input[type="file"] {
+      width: 250px;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+    }
+    .result {
+      margin-top: 20px;
+      font-weight: bold;
+      background-color: black;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      white-space: pre-wrap;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Upload YAML File for Spectral Validation</h2>
+    <form id="uploadForm" onsubmit="uploadFile(event)">
+      <input type="text" id="skyUsername" placeholder="Enter Sky Username" required />
+      <br/>
+      <input type="file" id="fileInput" accept=".yaml,.yml" required />
+      <br/>
+      <button type="submit">Validate</button>
+    </form>
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    function uploadFile(e) {
+      e.preventDefault(); // prevent form submission from reloading the page
+
+      const username = document.getElementById('skyUsername').value.trim();
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+      const resultBox = document.getElementById('result');
+      resultBox.innerText = "";
+
+      if (!username) {
+        resultBox.innerText = "❌ Sky Username is required.";
+        return;
+      }
+      if (!file) {
+        resultBox.innerText = "❌ YAML file is required.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("skyUsername", username);
+      formData.append("yamlFile", file);
+
+      fetch('/validate', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        resultBox.innerText = data.message + (data.details ? `\n\n${data.details}` : '');
+      })
+      .catch(error => {
+        resultBox.innerText = "❌ Error in validation.";
+      });
+    }
+  </script>
+</body>
+</html>
